@@ -181,6 +181,78 @@ table.m b{color:var(--accent)}
 .lay-figband .lfig{min-height:0;position:relative;margin-top:16px}
 
 /* =====================================================================
+   TITLE / OPENING ARCHETYPES
+   The title slide is the most-seen slide in a deck, so it is also the most
+   obvious place a catalogue starts looking repetitive. Do NOT reuse one opener
+   across decks (and do not make the opener and the closing slide the same
+   archetype — that is its own tell).
+   ===================================================================== */
+
+/* T1. BASELINE — label top-left, headline left, rule, lede. The house opener. */
+.slide.lay-title{display:flex;justify-content:center}
+.lay-title .tmeta{margin-top:26px;font-family:var(--font-mono);font-size:11.5px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+/* T2. CENTER — symmetric, everything on the centre line. Reads formal, ceremonial. */
+.slide.lay-title-center{display:grid;align-content:center;justify-items:center;text-align:center;
+  padding:0 110px}
+.lay-title-center h1.big{max-width:24ch}
+.lay-title-center .rule{margin-left:auto;margin-right:auto}
+.lay-title-center .lede{max-width:56ch}
+.lay-title-center .tmeta{margin-top:24px;font-family:var(--font-mono);font-size:11.5px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+/* T3. BIGTYPE — the headline IS the slide. No rule, no corner label, meta at the foot. */
+.slide.lay-title-big{display:grid;grid-template-rows:1fr auto;padding:54px 58px 40px}
+.lay-title-big h1.big{font-size:118px;line-height:.98;letter-spacing:-.04em;align-self:center;
+  max-width:24ch}
+.lay-title-big .tmeta{border-top:1px solid var(--line);padding-top:14px;display:flex;
+  justify-content:space-between;gap:24px;font-family:var(--font-mono);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+/* T4. SPLIT — title block on the left, a full-height figure panel bleeding to the edge. */
+.slide.lay-title-split{display:grid;grid-template-columns:56% 1fr;padding:0}
+.lay-title-split .ttext{padding:58px 34px 46px 60px;display:flex;flex-direction:column;
+  justify-content:center;min-width:0}
+.lay-title-split .tfig{position:relative;min-height:0;overflow:hidden}
+.lay-title-split .tfig svg{display:block;width:100%;height:100%}
+.lay-title-split .tmeta{margin-top:24px;font-family:var(--font-mono);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+
+/* T5. BAND — a solid dark band across the top carries the title; body below it. */
+.slide.lay-title-band{display:grid;grid-template-rows:47% 1fr;padding:0;background:var(--paper)}
+.lay-title-band .tband{background:var(--dark);color:var(--darkInk);padding:44px 60px;
+  display:flex;flex-direction:column;justify-content:center}
+.lay-title-band .tband .mark{color:var(--accent2)}
+.lay-title-band .tband h1.big{max-width:22ch}
+.lay-title-band .tbody{padding:30px 60px 0;display:flex;gap:54px;align-items:flex-start}
+.lay-title-band .tbody .lede{max-width:46ch}
+.lay-title-band .tmeta{font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* T6. OVERLAY — a full-bleed figure, with the title sitting on a paper block. */
+.slide.lay-title-overlay{display:block;padding:0}
+.lay-title-overlay .tfig{position:absolute;inset:0}
+.lay-title-overlay .tbox{position:absolute;left:0;bottom:0;right:0;padding:36px 60px 34px;
+  background:var(--paper);z-index:2}
+.lay-title-overlay .tbox .mark{margin-bottom:10px}
+.lay-title-overlay .tbox .lede{margin-top:12px;max-width:64ch}
+
+/* T7. INDEX — deck title at the top, then the sections as a numbered list. A title page
+   and a contents page in one; the most obviously different opener available. */
+.slide.lay-title-index{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-content:center}
+.lay-title-index h1.big{font-size:52px;max-width:16ch}
+.lay-title-index .rule{margin-top:14px}
+.lay-title-index .tmeta{margin-top:22px;font-family:var(--font-mono);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.lay-title-index .toc{display:flex;flex-direction:column;justify-content:center}
+.lay-title-index .toc div{display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:baseline;
+  padding:11px 0;border-top:1px solid var(--line);font-size:16px;color:var(--muted)}
+.lay-title-index .toc div:last-child{border-bottom:1px solid var(--line)}
+.lay-title-index .toc i{font-style:normal;font-family:var(--font-mono);font-size:11.5px;
+  color:var(--accent);letter-spacing:.1em}
+
+/* =====================================================================
    mobile — every archetype collapses to a single column. Reflow, never scale.
    ===================================================================== */
 @media (max-width:820px){
@@ -206,6 +278,20 @@ table.m b{color:var(--accent)}
   .lay-figband .lhead,.lay-figband .lmid{padding:0}
   .lay-figband .lfig{height:42vh}
   .lay-hero .lhero{font-size:clamp(56px,18vw,110px)}
+  /* title archetypes reflow too */
+  .slide.lay-title-big h1.big{font-size:clamp(38px,11vw,68px)}
+  .slide.lay-title-big{padding:22px 16px 84px}
+  .slide.lay-title-center{padding:24px 18px 84px}
+  .slide.lay-title-split{display:flex;flex-direction:column;padding:22px 16px 84px}
+  .lay-title-split .ttext{padding:0}
+  .lay-title-split .tfig{height:38vh;margin-top:18px}
+  .slide.lay-title-band{display:flex;flex-direction:column;padding:0}
+  .lay-title-band .tband{padding:26px 16px 22px}
+  .lay-title-band .tbody{flex-direction:column;gap:14px;padding:18px 16px 84px}
+  .slide.lay-title-overlay{display:flex;flex-direction:column;padding:22px 16px 84px}
+  .lay-title-overlay .tfig{position:relative;inset:auto;height:42vh;order:-1}
+  .lay-title-overlay .tbox{position:static;padding:18px 0 0}
+  .slide.lay-title-index{display:flex;flex-direction:column;gap:26px;padding:24px 16px 84px}
   h1.big{font-size:clamp(30px,9vw,48px)}
   h2{font-size:clamp(21px,6.2vw,30px)}
 }
@@ -257,11 +343,17 @@ table.m b{color:var(--accent)}
 <body>
 <div id="stage">
 
-  <section class="slide dark lay-quote active">
-    <div class="mark">Slide systems · layout archetypes</div>
-    <p class="lq" style="margin-top:18px">Same words. Same palette.<br>Different skeleton.</p>
-    <span class="rule"></span>
-    <div class="lattr">Eleven archetypes · pick per slide, never per deck</div>
+  <!-- OPENER: band — a dark band carries the title, the body below. A third distinct
+       opening archetype, so no two decks in the catalogue share an opener. -->
+  <section class="slide lay-title-band active">
+    <div class="tband">
+      <div class="mark">Slide systems · layout archetypes</div>
+      <h1 class="big" style="margin-top:12px">Same words.<br>Different skeleton.</h1>
+    </div>
+    <div class="tbody">
+      <p class="lede">Eleven layout archetypes and seven opening archetypes — chosen per slide from the content, never once per deck.</p>
+      <div class="tmeta">Layout Atlas</div>
+    </div>
   </section>
 
   <!-- 1 ───────────────────────────────────────────── stack -->
