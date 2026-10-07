@@ -15,13 +15,26 @@
 
   /* =============================================================================
    slide-layouts.css — the shared deck stylesheet.
-   Base typography + a set of LAYOUT ARCHETYPES.
+   Base typography + LAYOUT ARCHETYPES.
 
    A layout archetype changes the *geometry* — where the words sit, where the
    figure sits, what the eye hits first — not the decoration. Apply one per slide
    as `.lay-<name>` alongside `.slide`:
 
      <section class="slide lay-bleed">  ...  </section>
+
+   IMPORTANT ARCHITECTURE NOTE
+   Geometry rules are deliberately NOT gated on `.active`. In print, every slide
+   is shown at once so only slide 1 carries `.active` — if geometry depended on
+   `.active`, every other slide would silently collapse to the default flex
+   column and the PDF would lose its layouts. Visibility is therefore handled
+   separately, at the very bottom of this file:
+
+     .slide            position/size, display:none
+     .slide.active     display:flex            (screen default)
+     .slide.lay-<x>    display:grid + geometry (any slide, screen or print)
+     @media screen     .slide:not(.active) → display:none   (last, so it wins)
+     @media print      .slide → display:flex   (loses to geometry by specificity)
 
    All colour/type comes from theme custom properties, so every archetype works
    in every theme. House style is unchanged: flat, high contrast, one accent,
@@ -80,42 +93,35 @@ table.m b{color:var(--accent)}
 .kpi span{font-size:12.5px;color:var(--muted)}
 
 /* =====================================================================
-   1. STACK — label / headline / rule / figure / caption.
-   The baseline. Use it, but not for the whole deck.
+   ARCHETYPES — geometry only, never gated on .active (see header note).
    ===================================================================== */
+
+/* 1. STACK — label / headline / rule / figure / caption. The baseline. */
+.slide.lay-stack{display:flex}
 .lay-stack .fig{flex:1;margin-top:12px}
 .lay-stack .cap{margin-top:12px}
 
-/* =====================================================================
-   2 & 3. SPLIT — headline across the top, then text and figure side by side.
-   The mirror (.lay-split-r) reads differently: figure first, then justification.
-   ===================================================================== */
-/* Kept as two INDEPENDENT rules: sharing one selector list means the mirror's
-   grid-template-areas can fail to override, and the mirror silently becomes the original. */
-.slide.lay-split.active{display:grid;grid-template-rows:auto 1fr;grid-template-columns:44% 1fr;
+/* 2 & 3. SPLIT — headline across the top, then text and figure side by side.
+   Two INDEPENDENT rules: sharing one selector list let the mirror's
+   grid-template-areas fail to override, silently un-mirroring the slide. */
+.slide.lay-split{display:grid;grid-template-rows:auto 1fr;grid-template-columns:44% 1fr;
   gap:22px 34px;grid-template-areas:"head head" "txt fig"}
-.slide.lay-split-r.active{display:grid;grid-template-rows:auto 1fr;grid-template-columns:1fr 44%;
+.slide.lay-split-r{display:grid;grid-template-rows:auto 1fr;grid-template-columns:1fr 44%;
   gap:22px 34px;grid-template-areas:"head head" "fig txt"}
 .lay-split .lhead,.lay-split-r .lhead{grid-area:head}
 .lay-split .ltxt,.lay-split-r .ltxt{grid-area:txt;align-self:center}
-.lay-split .lfig,.lay-split-r .lfig{grid-area:fig}
-.lay-split .lfig,.lay-split-r .lfig{min-height:0}
+.lay-split .lfig,.lay-split-r .lfig{grid-area:fig;min-height:0}
 
-/* =====================================================================
-   4. BLEED — the figure IS the slide. Headline in a paper band, caption floating.
-   ===================================================================== */
-.slide.lay-bleed.active{display:block;padding:0}
+/* 4. BLEED — the figure IS the slide. Headline in a paper band, caption floating. */
+.slide.lay-bleed{display:block;padding:0}
 .lay-bleed .lfig{position:absolute;inset:0}
 .lay-bleed .lhead{position:absolute;top:0;left:0;right:0;padding:34px 60px 20px;
   background:var(--paper);z-index:2}
 .lay-bleed .lhead .mark{display:block}
 .lay-bleed .lcap{position:absolute;left:60px;right:60px;bottom:56px;z-index:2;max-width:74ch}
 
-/* =====================================================================
-   5. RAIL — a vertical section rail on the left carries the marker and number;
-   all content lives in the right column. No repeated top-left label.
-   ===================================================================== */
-.slide.lay-rail.active{display:grid;grid-template-columns:74px 1fr;padding:0}
+/* 5. RAIL — vertical section rail on the left; content in one tall column. */
+.slide.lay-rail{display:grid;grid-template-columns:74px 1fr;padding:0}
 .lay-rail .lrail{border-right:1px solid var(--line);display:flex;flex-direction:column;
   align-items:center;justify-content:space-between;padding:30px 0}
 .lay-rail .vmark{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--font-mono);
@@ -123,21 +129,16 @@ table.m b{color:var(--accent)}
 .lay-rail .vnum{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
 .lay-rail .lmain{padding:38px 58px 34px 44px;display:flex;flex-direction:column;min-height:0}
 
-/* =====================================================================
-   6. HERO — one giant focal element (number, equation, word) beside the prose.
-   ===================================================================== */
-.slide.lay-hero.active{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+/* 6. HERO — one giant focal element beside the prose. */
+.slide.lay-hero{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
 .lay-hero .lhero{font-family:var(--font-display);font-size:132px;line-height:.92;
   letter-spacing:-.04em;color:var(--accent);word-break:break-word}
 .lay-hero .lhero small{display:block;font-family:var(--font-body);font-size:15px;line-height:1.5;
   color:var(--muted);letter-spacing:0;margin-top:16px;max-width:34ch}
 .lay-hero .lside{align-self:center}
 
-/* =====================================================================
-   7. BANDS — full-width horizontal strips, each with a left label and right prose.
-   No headline at all. Good for enumerations that were becoming bullet lists.
-   ===================================================================== */
-.slide.lay-bands.active{display:grid;grid-template-rows:auto repeat(3,1fr);padding:0}
+/* 7. BANDS — full-width strips, left label + right prose. No headline block. */
+.slide.lay-bands{display:grid;grid-template-rows:auto repeat(3,1fr);padding:0}
 .lay-bands .lhead{padding:36px 60px 16px}
 .lay-bands .lband{display:grid;grid-template-columns:250px 1fr;gap:34px;align-items:center;
   padding:18px 60px;border-top:1px solid var(--line)}
@@ -145,11 +146,8 @@ table.m b{color:var(--accent)}
 .lay-bands .bbody{font-size:15px;line-height:1.55;color:var(--muted);max-width:68ch}
 .lay-bands .bbody b{color:var(--ink)}
 
-/* =====================================================================
-   8. QUAD — a full-width headline band over a 2×2 of independent cells.
-   Reads as a dashboard, not an essay.
-   ===================================================================== */
-.slide.lay-quad.active{display:grid;grid-template-rows:auto 1fr}
+/* 8. QUAD — full-width headline band over a 2×2 of independent cells. */
+.slide.lay-quad{display:grid;grid-template-rows:auto 1fr}
 .lay-quad .lhead{padding-bottom:16px;border-bottom:2px solid var(--ink)}
 .lay-quad .lquad{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:20px 30px;
   padding-top:20px;min-height:0}
@@ -158,11 +156,8 @@ table.m b{color:var(--accent)}
 .lay-quad .qcell h3{margin-bottom:7px}
 .lay-quad .qcell p{font-size:14.5px;line-height:1.5;color:var(--muted)}
 
-/* =====================================================================
-   9. COMPARE — two equal panels, labels above, a hairline between them.
-   Only for genuine either/or content; it announces "these two differ".
-   ===================================================================== */
-.slide.lay-compare.active{display:grid;grid-template-rows:auto 1fr}
+/* 9. COMPARE — two equal panels, labels above, hairline between. */
+.slide.lay-compare{display:grid;grid-template-rows:auto 1fr}
 .lay-compare .lhead{padding-bottom:14px}
 .lay-compare .lpanels{display:grid;grid-template-columns:1fr 1px 1fr;gap:0;min-height:0}
 .lay-compare .ldiv{background:var(--line)}
@@ -172,20 +167,15 @@ table.m b{color:var(--accent)}
   text-transform:uppercase;color:var(--accent);margin-bottom:12px}
 .lay-compare .lpanel .pfig{flex:1;min-height:0}
 
-/* =====================================================================
-   10. QUOTE — dark, full-bleed, one sentence, attribution in the corner.
-   Use sparingly: it is the deck's loudest slide.
-   ===================================================================== */
-.slide.lay-quote.active{display:grid;align-content:center;padding:0 96px}
+/* 10. QUOTE — dark, full-bleed, one sentence, attribution in the corner. */
+.slide.lay-quote{display:grid;align-content:center;padding:0 96px}
 .lay-quote .lq{font-family:var(--font-display);font-size:50px;line-height:1.2;
   letter-spacing:var(--hSpacing);max-width:30ch}
 .lay-quote .lattr{margin-top:30px;font-family:var(--font-mono);font-size:11.5px;
   letter-spacing:.2em;text-transform:uppercase;color:var(--accent2)}
 
-/* =====================================================================
-   11. FIGBAND — headline above, figure bleeding to the bottom three edges.
-   ===================================================================== */
-.slide.lay-figband.active{display:grid;grid-template-rows:auto 1fr 1.15fr;padding:0;gap:0}
+/* 11. FIGBAND — headline above, figure bleeding to the bottom three edges. */
+.slide.lay-figband{display:grid;grid-template-rows:auto 1fr 1.15fr;padding:0;gap:0}
 .lay-figband .lhead{padding:38px 60px 0}
 .lay-figband .lmid{padding:14px 60px 0}
 .lay-figband .lfig{min-height:0;position:relative;margin-top:16px}
@@ -195,29 +185,46 @@ table.m b{color:var(--accent)}
    ===================================================================== */
 @media (max-width:820px){
   .slide{padding:20px 16px 84px}
-  .slide.lay-split.active,.slide.lay-split-r.active,
-  .slide.lay-hero.active,.slide.lay-compare.active{display:flex;flex-direction:column;gap:16px}
-  .slide.lay-rail.active{display:flex;flex-direction:column;padding:20px 16px 84px}
+  .slide.lay-split,.slide.lay-split-r,.slide.lay-hero,.slide.lay-compare{
+    display:flex;flex-direction:column;gap:16px}
+  .slide.lay-rail{display:flex;flex-direction:column;padding:20px 16px 84px}
   .lay-rail .lrail{flex-direction:row;writing-mode:horizontal-tb;border-right:0;
     border-bottom:1px solid var(--line);padding:0 0 10px;align-items:center}
   .lay-rail .vmark{writing-mode:horizontal-tb;transform:none}
   .lay-rail .lmain{padding:14px 0 0}
-  .slide.lay-bands.active{display:flex;flex-direction:column;padding:20px 16px 84px}
+  .slide.lay-bands{display:flex;flex-direction:column;padding:20px 16px 84px}
   .lay-bands .lband{grid-template-columns:1fr;gap:6px;padding:14px 0}
-  .slide.lay-quad.active{display:flex;flex-direction:column;padding:20px 16px 84px}
+  .slide.lay-quad{display:flex;flex-direction:column;padding:20px 16px 84px}
   .lay-quad .lquad{grid-template-columns:1fr;grid-template-rows:auto}
-  .slide.lay-bleed.active{display:flex;flex-direction:column;padding:20px 16px 84px}
+  .slide.lay-bleed{display:flex;flex-direction:column;padding:20px 16px 84px}
   .lay-bleed .lfig{position:relative;inset:auto;height:46vh;order:-1}
   .lay-bleed .lhead{position:static;padding:0;background:none}
   .lay-bleed .lcap{position:static;margin-top:12px;max-width:100%}
-  .slide.lay-quote.active{padding:40px 20px 84px}
+  .slide.lay-quote{padding:40px 20px 84px}
   .lay-quote .lq{font-size:clamp(26px,7.6vw,40px)}
-  .slide.lay-figband.active{display:flex;flex-direction:column;padding:20px 16px 84px}
+  .slide.lay-figband{display:flex;flex-direction:column;padding:20px 16px 84px}
   .lay-figband .lhead,.lay-figband .lmid{padding:0}
   .lay-figband .lfig{height:42vh}
   .lay-hero .lhero{font-size:clamp(56px,18vw,110px)}
   h1.big{font-size:clamp(30px,9vw,48px)}
   h2{font-size:clamp(21px,6.2vw,30px)}
+}
+
+/* ---------------------------------------------------------------------------
+   VISIBILITY + PRINT. Kept last and deliberately layered (see header note):
+   on screen, hide the inactive slides; in print, show them ALL while each keeps
+   the geometry its archetype rule already gave it.
+   --------------------------------------------------------------------------- */
+@media screen{
+  .slide:not(.active){display:none}
+}
+@media print{
+  .slide{display:flex;position:relative;inset:auto;width:1280px;height:720px;
+    break-after:page;page-break-after:always}
+  /* no break after the final slide, or the PDF gains a trailing blank page */
+  .slide:last-of-type{break-after:auto;page-break-after:auto}
+  .progress,.nav,.chrome,.hint{display:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
 
@@ -236,20 +243,14 @@ table.m b{color:var(--accent)}
     font-size:10.5px;color:var(--muted)}
   .tag{display:inline-block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;
     text-transform:uppercase;color:var(--accent);border:1px solid var(--line);padding:3px 8px}
+  /* print display + per-archetype geometry now live in slide-layouts.css, so the deck
+     only needs stage sizing here. Do NOT re-declare `display` for .slide with !important
+     — that would outrank the archetype rules and collapse every layout to flex. */
   @media print{
     @page{size:1280px 720px;margin:0}
     html,body{height:auto!important;overflow:visible!important;background:#fff}
     body{display:block}
     #stage{transform:none!important;width:1280px!important;height:auto!important;box-shadow:none}
-    .slide{position:relative!important;inset:auto;display:flex!important;width:1280px;height:720px;
-      break-after:page;page-break-after:always}
-    .slide.lay-split.active,.slide.lay-split-r.active,.slide.lay-hero.active,
-    .slide.lay-rail.active,.slide.lay-bands.active,.slide.lay-quad.active,
-    .slide.lay-compare.active,.slide.lay-figband.active{display:grid!important}
-    .slide.lay-bleed.active{display:block!important}
-    .slide.lay-quote.active{display:grid!important}
-    .progress,.nav,.chrome{display:none!important}
-    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
 </head>
